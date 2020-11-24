@@ -73,3 +73,17 @@ display(diamonds.select("*"))
 
 val aggdata = spark.sql("SELECT Color, sum(Valor) From EmpleadosCGG group by Color")
 display  (aggdata)
+
+// COMMAND ----------
+
+dbutils.fs.mount(
+  source = "wasbs://containercggtest@storacccarlosgg.blob.core.windows.net",
+  mountPoint = "/mnt/resultado",
+  extraConfigs = Map(config -> sas))
+
+// COMMAND ----------
+
+aggdata.write
+ .option("header", "true")
+ .format("com.databricks.spark.csv")
+ .save("/mnt/resultado/EmpleadosCGG.csv")
