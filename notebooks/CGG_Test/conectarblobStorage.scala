@@ -59,8 +59,88 @@ display(mydf)
 val mydf2 = spark.read
 .option("header","true")
 .option("inferSchema", "true")
-.csv("/mnt/myfile3/TestCGG.csv")
+.csv("/mnt/myfile3")
 display(mydf2)
+
+// COMMAND ----------
+
+mydf2.createOrReplaceTempView("MisEmpleados")
+
+// COMMAND ----------
+
+/*jhu_daily_pop = spark.sql("""
+SELECT f.FIPS, f.Admin2, f.Province_State, f.Country_Region, f.Last_Update, f.Lat, f.Long_, f.Confirmed, f.Deaths, f.Recovered, f.Active, f.Combined_Key, f.process_date, p.POPESTIMATE2019 
+  FROM jhu_daily_covid f
+    JOIN fips_popest_county p
+      ON p.fips = f.FIPS
+""")
+jhu_daily_pop.createOrReplaceTempView("jhu_daily_pop")*/
+
+
+val jhu_daily_pop = spark.sql("""SELECT *   FROM MisEmpleados""")
+
+jhu_daily_pop.createOrReplaceTempView("jhu_daily_pop")
+
+
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from MisEmpleados
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from MisEmpleados
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from 
+// MAGIC jhu_daily_pop
+
+// COMMAND ----------
+
+/*%sql
+CREATE TABLE MIsEmpleados
+USING delta
+AS SELECT *
+FROM csv."""/mnt/myfile3/""*/
+
+/*SET spark.databricks.delta.formatCheck.enabled=false*/
+
+/*Answer by Abha · Aug 28 at 08:40 AM
+
+1. using Spark SQL Context in python, scala notebooks :*/
+
+sql("SET spark.databricks.delta.formatCheck.enabled=false")/* tuvr que poner esto para que no me chequease el formato DELTA*/
+
+/*2. In SQL dbc notebooks:
+
+SET spark.databricks.delta.formatCheck.enabled=false
+
+Add comment · Share*/
+
+
+dbutils.fs.mount(
+  source = "wasbs://containercggtest@storacccarlosgg.blob.core.windows.net/MisEmpleadosDelta.csv",
+  mountPoint = "/mnt/myfile4",
+  extraConfigs = Map(config -> sas))
+
+
+spark.sql("select * from jhu_daily_pop").write.format("delta").mode("overwrite").partitionBy("Color").save("/mnt/myfile4/")/*Esto funciono ; sobre el 3 no me iba*/
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC DROP TABLE IF EXISTS jhu_daily_pop_deltalake;
+// MAGIC CREATE TABLE jhu_daily_pop_deltalake USING DELTA LOCATION '/mnt/myfile4/';
+// MAGIC OPTIMIZE jhu_daily_pop_deltalake ZORDER BY (ID);
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from jhu_daily_pop_deltalake 
 
 // COMMAND ----------
 
