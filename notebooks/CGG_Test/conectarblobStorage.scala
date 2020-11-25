@@ -8,7 +8,8 @@ val config = "fs.azure.sas." + containerName+ "." + storageAccountName + ".blob.
 
 val containerName = "containercggtest"
 val storageAccountName = "storacccarlosgg"
-val sas = "?sv=2019-12-12&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-11-25T00:08:08Z&st=2020-11-24T16:08:08Z&spr=https&sig=lovOaqukRy6RZP2JPKeyhJzepoxN2PMq8tMMauOVef0%3D"
+/*val sas = "?sv=2019-12-12&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-11-25T00:08:08Z&st=2020-11-24T16:08:08Z&spr=https&sig=lovOaqukRy6RZP2JPKeyhJzepoxN2PMq8tMMauOVef0%3D"*/
+val sas = "sv=2019-12-12&ss=bfqt&srt=sco&sp=rwdlacupx&se=2021-03-01T19:02:19Z&st=2020-11-25T11:02:19Z&spr=https&sig=xAcW2%2BTkleVuKC24vPs3YS8Xhvam4PCd%2FDEyQMVO1rI%3D"
 val config = "fs.azure.sas." + containerName+ "." + storageAccountName + ".blob.core.windows.net"
 
 
@@ -21,7 +22,7 @@ val config = "fs.azure.sas." + containerName+ "." + storageAccountName + ".blob.
 
 dbutils.fs.mount(
   source = "wasbs://containercggtest@storacccarlosgg.blob.core.windows.net/TestCGG.csv",
-  mountPoint = "/mnt/myfile",
+  mountPoint = "/mnt/myfile3",
   extraConfigs = Map(config -> sas))
 
 
@@ -29,22 +30,62 @@ dbutils.fs.mount(
 
 // COMMAND ----------
 
+dbutils.fs.unmount("/mnt/myfile2")
+
+// COMMAND ----------
+
+dbutils.fs.unmount("/mnt/myfile")
+
+// COMMAND ----------
+
+dbutils.fs.mount(
+  source = "wasbs://containercggtest@storacccarlosgg.blob.core.windows.net/TestCGG.csv",
+  mountPoint = "/mnt/myfile2",
+  extraConfigs = Map(config -> sas))
+
+
+// COMMAND ----------
+
 val mydf = spark.read
 .option("header","true")
 .option("inferSchema", "true")
-.csv("/mnt/myfile")
+.csv("/mnt/myfile3")
 display(mydf)
 
 
 
 // COMMAND ----------
 
+val mydf2 = spark.read
+.option("header","true")
+.option("inferSchema", "true")
+.csv("/mnt/myfile3/TestCGG.csv")
+display(mydf2)
+
+// COMMAND ----------
+
 /*display(mydf)*/
 import org.apache.spark.sql.functions
 
-val selectspecificcolsdf = mydf.select("ID","Nombre","Color","Valor")/*Hace falta un espacio!!*/
+val selectspecificcolsdf = mydf.select("ID","Nombre","Color","Valor")/*Hace falta un espacio!! porque estaba asi*/
 display(selectspecificcolsdf)
 selectspecificcolsdf.createOrReplaceTempView("EmpleadosCGG")
+
+// COMMAND ----------
+
+
+
+val source_file = "/mnt/myfile3/TestCGG.csv"
+  /*process_date = csv[100:104] + "-" + csv[94:96] + "-" + csv[97:99]*/
+  
+  /* Read data into temporary dataframe*/
+  val df_tmp = spark.read.option("inferSchema", True).option("header", True).csv(source_file)
+  df_tmp.createOrReplaceTempView("df_tmp")
+
+
+// COMMAND ----------
+
+// MAGIC %sql
 
 // COMMAND ----------
 
