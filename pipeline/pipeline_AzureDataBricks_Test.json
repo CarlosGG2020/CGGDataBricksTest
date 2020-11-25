@@ -1,0 +1,52 @@
+{
+	"name": "pipeline_AzureDataBricks_Test",
+	"properties": {
+		"description": "pipeline_Azure Data B ricks_Test",
+		"activities": [
+			{
+				"name": "Call ADF Test",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/CGG_Test/TestPasoParams",
+					"baseParameters": {
+						"datepath": "lalala"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceAzureDataBricksCGG",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "NotebookCGG1.0",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/CGG_Test/TestPasoParams"
+				},
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceAzureDataBricksCGG",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
