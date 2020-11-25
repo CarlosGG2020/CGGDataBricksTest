@@ -27,7 +27,7 @@
 				}
 			},
 			{
-				"name": "NotebookCGG1",
+				"name": "NotebookCGG1.0",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
