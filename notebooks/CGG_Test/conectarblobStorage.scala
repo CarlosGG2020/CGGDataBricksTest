@@ -208,3 +208,168 @@ aggdata.write
  .option("header", "true")
  .format("com.databricks.spark.csv")
  .save("/mnt/resultado/EmpleadosCGG.csv")
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC /*Iniciamos Delta manualmete*/
+// MAGIC 
+// MAGIC CREATE TABLE eventsCGG (
+// MAGIC   date DATE,
+// MAGIC   eventId STRING,
+// MAGIC   eventType STRING,
+// MAGIC   data STRING)
+// MAGIC USING delta
+// MAGIC PARTITIONED BY (date)
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC --select * from eventsCGG
+// MAGIC insert into eventsCGG values (now(),"2","eventoTipo2","esots son mis datos2")
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from eventsCGG
+
+// COMMAND ----------
+
+
+
+
+
+val eventsCGG = spark.read.format("delta").load("/mnt/delta/eventsCGG")
+
+// COMMAND ----------
+
+// MAGIC 
+// MAGIC %sql
+// MAGIC SELECT * FROM eventsCGG VERSION AS OF 2
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC OPTIMIZE eventsCGG
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from eventCGG VERSION AS OF 0
+// MAGIC /* despues del optimize ya no hay versiones creo*/
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC 
+// MAGIC DESCRIBE DETAIL eventCGG
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC /*
+// MAGIC CREATE TABLE employees (name STRING, dept STRING, salary INT, age INT);
+// MAGIC 
+// MAGIC INSERT INTO employees VALUES ("Lisa", "Sales", 10000, 35);
+// MAGIC INSERT INTO employees VALUES ("Evan", "Sales", 32000, 38);
+// MAGIC INSERT INTO employees VALUES ("Fred", "Engineering", 21000, 28);
+// MAGIC INSERT INTO employees VALUES ("Alex", "Sales", 30000, 33);
+// MAGIC INSERT INTO employees VALUES ("Tom", "Engineering", 23000, 33);
+// MAGIC INSERT INTO employees VALUES ("Jane", "Marketing", 29000, 28);
+// MAGIC INSERT INTO employees VALUES ("Jeff", "Marketing", 35000, 38);
+// MAGIC INSERT INTO employees VALUES ("Paul", "Engineering", 29000, 23);
+// MAGIC INSERT INTO employees VALUES ("Chloe", "Engineering", 23000, 25);*/
+// MAGIC 
+// MAGIC 
+// MAGIC SELECT * FROM employees
+// MAGIC 
+// MAGIC /*
+// MAGIC SELECT name, dept, RANK() OVER (PARTITION BY dept ORDER BY salary) AS rank FROM employees;
+// MAGIC 
+// MAGIC 
+// MAGIC SELECT name, dept, DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary ROWS BETWEEN
+// MAGIC     UNBOUNDED PRECEDING AND CURRENT ROW) AS dense_rank FROM employees;
+// MAGIC 
+// MAGIC 
+// MAGIC SELECT name, dept, age, CUME_DIST() OVER (PARTITION BY dept ORDER BY age
+// MAGIC     RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cume_dist FROM employees;
+// MAGIC 
+// MAGIC 
+// MAGIC SELECT name, dept, salary, MIN(salary) OVER (PARTITION BY dept ORDER BY salary) AS min
+// MAGIC     FROM employees;
+// MAGIC 
+// MAGIC 
+// MAGIC SELECT name, salary,
+// MAGIC     LAG(salary) OVER (PARTITION BY dept ORDER BY salary) AS lag,
+// MAGIC     LEAD(salary, 1, 0) OVER (PARTITION BY dept ORDER BY salary) AS lead
+// MAGIC     FROM employees;*/
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC SELECT * FROM employees
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC SELECT name, dept, RANK() OVER (PARTITION BY dept ORDER BY salary) AS rank FROM employees;
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC SELECT name, dept, age, CUME_DIST() OVER (PARTITION BY dept ORDER BY age
+// MAGIC     RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cume_dist FROM employees;
+
+// COMMAND ----------
+
+dbutils.fs.mount(
+  source = "wasbs://containercggtest@storacccarlosgg.blob.core.windows.net/EmpleadosCGGEnDelta.csv",
+  mountPoint = "/mnt/myfile5",
+  extraConfigs = Map(config -> sas))
+
+// COMMAND ----------
+
+// MAGIC 
+// MAGIC 
+// MAGIC %sql
+// MAGIC DROP TABLE IF EXISTS EmpleadosCGGEnDelta;
+// MAGIC CREATE TABLE EmpleadosCGGEnDelta USING DELTA LOCATION '/mnt/myfile5/';
+// MAGIC --OPTIMIZE EmpleadosCGGEnDelta ZORDER BY (ID);
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC 
+// MAGIC drop table employeesDeltaCGGManual;
+// MAGIC CREATE TABLE employeesDeltaCGGManual (name STRING, dept STRING, salary INT, age INT)
+// MAGIC USING delta
+// MAGIC PARTITIONED BY (name)
+// MAGIC 
+// MAGIC 
+// MAGIC ;
+// MAGIC 
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Lisa", "Sales", 10000, 35);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Evan", "Sales", 32000, 38);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Fred", "Engineering", 21000, 28);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Alex", "Sales", 30000, 33);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Tom", "Engineering", 23000, 33);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Jane", "Marketing", 29000, 28);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Jeff", "Marketing", 35000, 38);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Paul", "Engineering", 29000, 23);
+// MAGIC INSERT INTO employeesDeltaCGGManual VALUES ("Chloe", "Engineering", 23000, 25);
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC select * from employeesDeltaCGGManual
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC SELECT name, dept, age, CUME_DIST() OVER (PARTITION BY dept ORDER BY age
+// MAGIC     RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cume_dist FROM employeesDeltaCGGManual;
+
+// COMMAND ----------
+
+// MAGIC %sql
+// MAGIC SELECT name, dept, RANK() OVER (PARTITION BY dept ORDER BY salary desc) AS rank FROM employeesDeltaCGGManual
